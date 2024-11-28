@@ -28716,23 +28716,65 @@ let ycolumns = ydoc.getArray('columns');
 const provider = new y_websocket__WEBPACK_IMPORTED_MODULE_3__.WebsocketProvider("ws://localhost:1234", "teste", ydoc);
 
 
-ycolumns.observeDeep(function(event) {
-  document.body.innerHTML=`<button onclick="createColumn()">Create Column</button>
-      <button onclick="createTask(0)">Create Task</button>
-  <script src="quill.bundle.js"></script>`
+ycolumns.observeDeep(function() {
+  document.body.innerHTML = `
+    <h1>Kanban Board</h1>
+    <button class="btn btn-primary mb-3" onclick="createColumn()">Create Column</button>
+    <div id="board" class="d-flex"></div>
+  `;
+  
   ycolumns.forEach(function(columns, index) {
-    const columnContainer=document.createElement('div');
-    columnContainer.setAttribute('id', `${index}`);
-    document.body.appendChild(columnContainer);
+    const columnContainer = document.createElement('div');
+    columnContainer.setAttribute('id', index);
+    columnContainer.classList.add('col-md-3', 'p-3', 'border', 'rounded', 'mr-2', 'bg-light');
+    
+    const board = document.getElementById('board');
+    board.append(columnContainer);
+
+    
+    const columnTitle = ydoc.getText(`${index}-title`);
+    const columnTitleContainer = document.createElement('div');
+    columnTitleContainer.setAttribute('id', `${index}-title`);
+  
+    columnContainer.append(columnTitleContainer);
+    
+    const columnTitleEditor = new (quill__WEBPACK_IMPORTED_MODULE_0___default())(columnTitleContainer, {
+      theme: 'snow',
+      modules: {
+        cursors: true,
+        toolbar: false // Disable the toolbar to keep it simple
+      },
+      placeholder: 'Titulo da Coluna',
+    });
+    
+    // Enforce bold formatting and H2 size
+    columnTitleContainer.style.fontWeight = 'bold';
+    columnTitleContainer.style.fontSize = '2rem'; // Match H2 size
+    columnTitleContainer.style.lineHeight = '1.5';
+    columnTitleContainer.style.whiteSpace = 'nowrap'; // Prevent wrapping
+    columnTitleContainer.style.overflow = 'hidden'; // Hide overflow content
+    columnTitleContainer.style.textOverflow = 'ellipsis'; // Add ellipsis if text is too long
+    columnTitleContainer.style.height = '60px'; // Fixed height for consistency
+    columnTitleContainer.style.padding = '0';
+    columnTitleContainer.style.margin = '0';
+    
+    // Restrict editor to a single line
+    columnTitleEditor.on('text-change', () => {
+      const text = columnTitleEditor.getText();
+      if (text.includes('\n')) {
+        columnTitleEditor.deleteText(text.indexOf('\n'), 1);
+      }
+    });
+
     const createTaskButton = document.createElement('button');
     createTaskButton.innerText = 'Create Task';
+    createTaskButton.classList.add('btn', 'btn-success', 'mt-2');
     createTaskButton.onclick = () => createTask(index);
     columnContainer.append(createTaskButton);
-    
-    columns.forEach(function(column){
-      console.log("LOOK HERE");
-      console.log(column);
 
+    const columnTitleBinding = new y_quill__WEBPACK_IMPORTED_MODULE_4__.QuillBinding(columnTitle, columnTitleEditor, provider.awareness);
+
+    columns.forEach(function(column) {
       // Get text types for title and description
       const title = ydoc.getText(`${column}-${index}-title`);
       const desc = ydoc.getText(`${column}-${index}-desc`);
@@ -28740,14 +28782,13 @@ ycolumns.observeDeep(function(event) {
       // Create a parent container div for title and description
       const parentContainer = document.createElement('div');
       parentContainer.setAttribute('id', `${column}-${index}`);
-      parentContainer.classList.add('column-container');
-      // Append the parent container to #columns-container
-      document.getElementById(`${index}`).append(parentContainer);
+      parentContainer.classList.add('task-container', 'mb-3', 'p-2', 'border', 'rounded', 'bg-white');
+      columnContainer.append(parentContainer);
 
       // Create a title container
       const titleContainer = document.createElement('div');
       titleContainer.setAttribute('id', `${column}-${index}-title`);
-      titleContainer.classList.add('title-container');
+      titleContainer.classList.add('title-container', 'font-weight-bold');
       parentContainer.append(titleContainer);
 
       // Create a description container
@@ -28755,7 +28796,7 @@ ycolumns.observeDeep(function(event) {
       descContainer.setAttribute('id', `${column}-${index}-desc`);
       descContainer.classList.add('desc-container');
       parentContainer.append(descContainer);
-
+      
       // Initialize Quill editor for description
       const descEditor = new (quill__WEBPACK_IMPORTED_MODULE_0___default())(descContainer, {
         modules: {
@@ -28786,10 +28827,7 @@ ycolumns.observeDeep(function(event) {
       // Bind the editors to Yjs
       const descBinding = new y_quill__WEBPACK_IMPORTED_MODULE_4__.QuillBinding(desc, descEditor, provider.awareness);
       const titleBinding = new y_quill__WEBPACK_IMPORTED_MODULE_4__.QuillBinding(title, titleEditor, provider.awareness);
-
-
-      // Mark this column as rendered
-  })
+    });
   });
 });
 
