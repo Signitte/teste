@@ -28715,7 +28715,6 @@ let ydoc = new yjs__WEBPACK_IMPORTED_MODULE_2__.Doc();
 let ycolumns = ydoc.getArray('columns');
 const provider = new y_websocket__WEBPACK_IMPORTED_MODULE_3__.WebsocketProvider("ws://localhost:1234", "teste", ydoc);
 
-
 ycolumns.observeDeep(function() {
   document.body.innerHTML = `
     <h1>Kanban Board</h1>
@@ -28731,7 +28730,6 @@ ycolumns.observeDeep(function() {
     const board = document.getElementById('board');
     board.append(columnContainer);
 
-    
     const columnTitle = ydoc.getText(`${index}-title`);
     const columnTitleContainer = document.createElement('div');
     columnTitleContainer.setAttribute('id', `${index}-title`);
@@ -28744,7 +28742,7 @@ ycolumns.observeDeep(function() {
         cursors: true,
         toolbar: false // Disable the toolbar to keep it simple
       },
-      placeholder: 'Titulo da Coluna',
+      placeholder: 'Título da Coluna',
     });
     
     // Enforce bold formatting and H2 size
@@ -28754,11 +28752,12 @@ ycolumns.observeDeep(function() {
     columnTitleContainer.style.whiteSpace = 'nowrap'; // Prevent wrapping
     columnTitleContainer.style.overflow = 'hidden'; // Hide overflow content
     columnTitleContainer.style.textOverflow = 'ellipsis'; // Add ellipsis if text is too long
-    columnTitleContainer.style.height = '60px'; // Fixed height for consistency
+    columnTitleContainer.style.height = '75px'; // Fixed height for consistency
     columnTitleContainer.style.padding = '0';
     columnTitleContainer.style.margin = '0';
-    
-    // Restrict editor to a single line
+
+
+    // Restringir editor a uma única linha
     columnTitleEditor.on('text-change', () => {
       const text = columnTitleEditor.getText();
       if (text.includes('\n')) {
@@ -28775,30 +28774,38 @@ ycolumns.observeDeep(function() {
     const columnTitleBinding = new y_quill__WEBPACK_IMPORTED_MODULE_4__.QuillBinding(columnTitle, columnTitleEditor, provider.awareness);
 
     columns.forEach(function(column) {
-      // Get text types for title and description
       const title = ydoc.getText(`${column}-${index}-title`);
       const desc = ydoc.getText(`${column}-${index}-desc`);
 
-      // Create a parent container div for title and description
       const parentContainer = document.createElement('div');
       parentContainer.setAttribute('id', `${column}-${index}`);
       parentContainer.classList.add('task-container', 'mb-3', 'p-2', 'border', 'rounded', 'bg-white');
       columnContainer.append(parentContainer);
 
-      // Create a title container
+      // Título da tarefa
       const titleContainer = document.createElement('div');
       titleContainer.setAttribute('id', `${column}-${index}-title`);
-      titleContainer.classList.add('title-container', 'font-weight-bold');
+      titleContainer.classList.add('task-title-editor');
       parentContainer.append(titleContainer);
 
-      // Create a description container
+      const titleEditor = new (quill__WEBPACK_IMPORTED_MODULE_0___default())(titleContainer, {
+        theme: 'snow',
+        modules: {
+          cursors: true,
+          toolbar: false
+        },
+        placeholder: 'Título da Tarefa',
+      });
+      const titleBinding = new y_quill__WEBPACK_IMPORTED_MODULE_4__.QuillBinding(title, titleEditor, provider.awareness);
+
+      // Descrição da tarefa
       const descContainer = document.createElement('div');
       descContainer.setAttribute('id', `${column}-${index}-desc`);
-      descContainer.classList.add('desc-container');
+      descContainer.classList.add('description-editor');
       parentContainer.append(descContainer);
-      
-      // Initialize Quill editor for description
+
       const descEditor = new (quill__WEBPACK_IMPORTED_MODULE_0___default())(descContainer, {
+        theme: 'snow',
         modules: {
           cursors: true,
           toolbar: [
@@ -28806,27 +28813,10 @@ ycolumns.observeDeep(function() {
             ['bold', 'italic', 'underline'],
             ['image', 'code-block']
           ],
-          history: {
-            userOnly: true
-          }
         },
-        placeholder: 'Start collaborating...',
-        theme: 'snow' // or 'bubble'
+        placeholder: 'Descrição da Tarefa',
       });
-
-      // Initialize Quill editor for title
-      const titleEditor = new (quill__WEBPACK_IMPORTED_MODULE_0___default())(titleContainer, {
-        theme: 'snow',
-        modules: {
-          cursors: true,
-          toolbar: false  // Disable the toolbar to make it simple
-        },
-        placeholder: 'Type something...',
-      });
-
-      // Bind the editors to Yjs
       const descBinding = new y_quill__WEBPACK_IMPORTED_MODULE_4__.QuillBinding(desc, descEditor, provider.awareness);
-      const titleBinding = new y_quill__WEBPACK_IMPORTED_MODULE_4__.QuillBinding(title, titleEditor, provider.awareness);
     });
   });
 });
