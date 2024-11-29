@@ -28798,6 +28798,19 @@ ycolumns.observeDeep(function() {
       });
       const titleBinding = new y_quill__WEBPACK_IMPORTED_MODULE_4__.QuillBinding(title, titleEditor, provider.awareness);
 
+      // Function to show alert
+  function showAlert(message) {
+  alert(message);
+  }
+
+  // Monitor changes in title
+  titleEditor.on('text-change', () => {
+  const delta = titleEditor.getDelta();
+  if (delta.ops.length > 0 && delta.ops.some(op => op.insert && typeof op.insert === 'string' && op.insert.length > 10)) {
+      showAlert(`Título alterado significativamente: "${titleEditor.getText()}"`);
+  }
+  });
+
       // Descrição da tarefa
       const descContainer = document.createElement('div');
       descContainer.setAttribute('id', `${column}-${index}-desc`);
